@@ -1,0 +1,917 @@
+---
+title: "ATS_Report"
+author: "Robert Jackson"
+date: "5/31/2018"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo=FALSE, cache.comments=FALSE,message=FALSE, warning=FALSE}
+# I had to install tidyverse manually first since it doesn't show up with the "install.package" command.
+library("papeR")
+library("dplyr")
+library("devtools")
+library("knitr")
+library("ggplot2")
+library("kableExtra")
+library("corrplot")
+library("psych")
+```
+
+```{r, echo=FALSE, cache.comments=FALSE,message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(root.dir = "/Users/robertjackson/Documents/Classroom_INC./CI_DATA")
+```
+
+```{r, echo=FALSE}
+# 1 step is I'll import the data from the csv files.  These files are pulled from the MySQL database for After The Storm.  Then we'll move on to some exploratory data analysis.  I'll later repeat this same process for the exteral survey measures.
+
+ATS_Skills <- read.csv("SkillDev.ATS.csv")
+
+ATSP_Skills <- read.csv("PointsPos.ATS.csv")
+
+Grade_Data <- read.csv("user grades.csv") # I have a new dataset which should have more accurate grade levels.
+```
+
+```{r,echo=FALSE,cache=FALSE, message=FALSE, warning=FALSE}
+Grade_Data <- rename(Grade_Data, Student.ID = user_id)
+
+ATS_Skills <- merge(ATS_Skills, Grade_Data, by = "Student.ID")
+```
+
+```{r,echo=FALSE,cache=FALSE, message=FALSE, warning=FALSE}
+# Removeing the ID variable for the Summary Table
+ATS_Skills <- dplyr::select(ATS_Skills, - Student.ID)
+
+ATS_Skills <- rename(ATS_Skills, Grades = gradelevel)
+```
+
+```{r}
+ATS_Skills2 <- ATS_Skills[!duplicated(ATS_Skills), ]
+```
+
+```{r}
+ATS_Skills2 <- dplyr::filter(ATS_Skills2, episodes > 0)
+```
+
+
+***
+# Part 1: 
+***
+```{r,echo = FALSE, cache=FALSE, warning=FALSE}
+ATS_Skills2 <- na.omit(ATS_Skills2)
+```
+
+### Summary Statistics of After the Storm - 2017 - 18 [table 1]
+```{r,echo = FALSE, cache=FALSE, warning=FALSE}
+# Defining the function
+my.summary <- function(x, na.rm=TRUE){
+  result <- c(Mean=mean(x, na.rm=na.rm),
+              SD=sd(x, na.rm=na.rm),
+              Median=median(x, na.rm=na.rm),
+              Min=min(x, na.rm=na.rm),
+              Max=max(x, na.rm=na.rm), 
+              N=length(x))
+}
+
+# identifying numeric columns
+ind <- sapply(ATS_Skills2, is.numeric)
+
+
+# applying the function to numeric columns only
+sapply(ATS_Skills2[, ind], my.summary)  
+```
+
+### Histograms of Skill Point Distribution *[Cummunlative]*
+
+```{r,histogram, echo=FALSE, cache=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) + geom_histogram(mapping = aes(x = Social), binwidth = 0.5) + ggtitle("Skills Performance in After The Storm", subtitle = "Social & Cross-Cultural") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 16,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$Social) , color = "green")
+```
+
+```{r,echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = Productivity), binwidth = 0.5) + ggtitle("Skills Performance in After The Storm", subtitle = "Productivity & Accountability") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 16,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$Productivity) , color = "green")
+```
+
+```{r,echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = Leadership), binwidth = 0.5) + ggtitle("Skills Performance in After The Storm", subtitle = "Leadership & Responsibility") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 16,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$Leadership) , color = "green")
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = Initiative), binwidth = 0.5) + ggtitle("Skills Performance in After The Storm", subtitle = "Initiative & Self-Direction") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 16,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$Initiative) , color = "green")
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = Flexibility), binwidth = 0.5) + ggtitle("Skills Performance in After The Storm", subtitle = "Flexibility & Adaptability") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 16,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$Flexibility) , color = "green")
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = Total.Good.Decisions), binwidth = 0.5) + ggtitle("Performance in After The Storm", subtitle = "Total Good Decision") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 16,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$Total.Good.Decisions) , color = "green")
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = episodes), binwidth = 0.5) + ggtitle("Distribution of Episodes Played in After The Storm") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = ,
+  size = 12
+  )) + geom_vline(xintercept =
+  mean(ATS_Skills2$episodes) , color = "green")
+```
+
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ggplot(data = ATS_Skills2) +
+  geom_histogram(mapping = aes(x = Grades), binwidth = 0.5) + scale_x_continuous(,breaks = 1:13, limits=c(0, 14)) + ggtitle("Distribution of Student Grade Levels who Play After The Storm",subtitle = "GREEN LINE IS MEDIAN") + labs(x = "Total Score", y = "Number of Students") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14,
+  hjust = 0
+  )) +
+  theme(axis.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = ,
+  size = 12
+  )) + geom_vline(xintercept =
+  median(ATS_Skills2$episodes) , color = "green")
+```
+### Summary Statistics of Skill Point Distribution [By Percentage]
+*The additional varaibles takes into account the particular episodes played by students and which points were avaiable for them to score.*
+
+```{r,echo=FALSE,cache=FALSE, message=FALSE, warning=FALSE}
+ATS_Skills2 <- dplyr::rename(ATS_Skills2, Users = User_Name)
+ATSP_Skills <- dplyr::rename(ATSP_Skills, Users = username)
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ATSPer_Skills <- merge(ATSP_Skills, ATS_Skills2, by = "Users")
+ATSPer_Skills <- dplyr::filter(ATSPer_Skills, episodes > 0)
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+ATSPer_Skills <-
+  dplyr::select(ATSPer_Skills,
+  -Social,
+  -Initiative,
+  -Leadership,
+  -Productivity,
+  -Flexibility)
+```
+
+```{r, echo=FALSE, cache=FALSE, message=FALSE, warning=FALSE}
+# Need to generate the ratio necessary accurately understand the data.  I have to make new variables based on the ratio
+
+ATSPer_Skills <-
+dplyr::mutate(ATSPer_Skills, SocialR = student_good_social / possible_good_social)
+ATSPer_Skills <-
+dplyr::mutate(ATSPer_Skills, ProdR = student_good_Productivity / possible_good_Productivity)
+ATSPer_Skills <-
+dplyr::mutate(ATSPer_Skills, LeadR = student_good_Leadership / possible_good_Leadership)
+ATSPer_Skills <-
+dplyr::mutate(ATSPer_Skills, InitiativeR = student_good_Initiative / possible_good_Initiative)
+ATSPer_Skills <-
+dplyr::mutate(ATSPer_Skills, FlexR = student_good_Flexibility / possible_good_Flexibility)
+```
+
+```{r, echo=FALSE, cache.comments=FALSE,message=FALSE, warning=FALSE,results = 'hide'}
+# Varifying there are no missing values.
+ATSPer_Skills2 <- ATSPer_Skills[!is.na(ATSPer_Skills$SocialR), ]
+ATSPer_Skills2 <- ATSPer_Skills[!is.na(ATSPer_Skills$InitiativeR), ]
+sapply(ATSPer_Skills, function(x)
+sum(is.na(x)))
+```
+
+# There are a number of NaNs for the ratio statistics.  That is because a number of users received 0 for points gained or points possible. 
+
+### Motified Summary Statistics of After the Storm Including Percentage - 2017 - 18 [table 2]
+```{r,echo = FALSE, cache=FALSE, warning=FALSE}
+# Defining the function
+my.summary <- function(x, na.rm=TRUE){
+  result <- c(Mean=mean(x, na.rm=na.rm),
+              SD=sd(x, na.rm=na.rm),
+              Median=median(x, na.rm=na.rm),
+              Min=min(x, na.rm=na.rm),
+              Max=max(x, na.rm=na.rm), 
+              N=length(x))
+}
+
+# identifying numeric columns
+ind <- sapply(ATSPer_Skills2, is.numeric)
+
+
+# applying the function to numeric columns only
+sapply(ATSPer_Skills2[, ind], my.summary)  
+```
+
+### Histogram of Skill Point Distribution [By Percentage]
+*This takes into account the particular episodes played by students and which points were avaiable for them to score.  The distribution is now a scale of 0 - 100%.*  
+
+*Meaning student could have earns 0% of the points available to them based on the episodes they played or they may have earned 100% of the point available to them in the episodes they've played.*
+
+```{r, echo=FALSE}
+# Next I want to visualize these distribution on the same plot.  I'll have to you ggplot2.
+# I had to convert the data from wide to long in order to vizualize the distribution. 
+D2 <- dplyr::select(ATSPer_Skills, -Users)
+D3 <- dplyr::select(D2, FlexR, InitiativeR, ProdR, LeadR, SocialR)
+```
+
+### Box Plot of 21st Century Skills by Percentage
+
+```{r,echo=FALSE}
+D3 <- rename(D3, "Flexiblity" = "FlexR") #Flexibility & Adaptability
+D3 <- rename(D3, "Initiative" = "InitiativeR") #Initiative & Self-Direction 
+D3 <- rename(D3, "Productivity" = "ProdR") #Productivity & Accountability
+D3 <- rename(D3, "Leadership" = "LeadR") #Leadership & Responsibility
+D3 <- rename(D3, "Social" = "SocialR") #Social & Cross-Cultural Skills 
+```
+
+```{r}
+library("reshape2")
+```
+
+```{r}
+ATS_Skills2 <- select(ATS_Skills, Social, Productivity, Leadership, Initiative, Flexibility)
+```
+
+```{r,echo=FALSE}
+Viz <- melt(ATS_Skills2)
+```
+
+
+```{r, echo=FALSE}
+ggplot(data = Viz, aes(x = variable, y = value, fill = variable)) + geom_boxplot() + scale_y_continuous(breaks=NULL) + scale_fill_discrete(
+  name = "21st Century Skills",
+  labels = c(
+  "Social & Cross-Cultural",
+  "Productivity & Accountability",
+  "Leadership & Responsibility",
+  "Initiative & Self-Direction",
+  "Flexibility & Adaptability"
+  )
+  )  + theme(
+  axis.title.x = element_blank(),
+  axis.text.x = element_blank(),
+  axis.ticks.x = element_blank()
+  ) + stat_summary(
+  fun.y = mean,
+  geom = "point",
+  shape = 20,
+  size = 5,
+  color = "green",
+  fill = "green"
+  ) + stat_summary(
+  fun.y = median,
+  fun.ymin = median,
+  fun.ymax = median,
+  geom = "Crossbar",
+  width = 0.9
+  ) + ggtitle("Points Earned - After The Storm", subtitle = "Measures of Five 21st Century Skills") + labs(x = "Skills", y = "Points Earned") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14,
+  hjust = 0
+  ))
+```
+
+```{r, echo=FALSE, results= 'hide'}
+ATSPer_Skills <- ATSPer_Skills[!is.na(ATSPer_Skills$SocialR),]
+ATSPer_Skills <- ATSPer_Skills[!is.na(ATSPer_Skills$InitiativeR),]
+sapply(ATSPer_Skills, function(x)
+sum(is.na(x)))
+```
+
+**We'll use this next section to outline how many student had an opportunity to perform each of the five 21st century skills**
+
+```{r}
+D1 <- dplyr::select(ATSPer_Skills2, contains("possible_"))
+```
+
+```{r,echo=FALSE}
+Viz2 <- melt(D1)
+```
+
+**This boxplot is dynamic and analyzes what episodes of the game students reach and whether they encounter an opportunity to demonstrate one of the five 21st century skills.  Since these skills don't appear evenly throughout the game its important to know in which ways students are not being exposed to certain skill opportunities.**
+```{r, echo=FALSE}
+ggplot(data = Viz2, aes(x = variable, y = value, fill = variable)) + scale_fill_discrete(
+  name = "21st Century Skills Available",
+  labels = c(
+  "Social & Cross-Cultural",
+  "Productivity & Accountability",
+  "Leadership & Responsibility",
+  "Initiative & Self-Direction",
+  "Flexibility & Adaptability"
+  )
+  ) + geom_boxplot() + theme(
+  axis.title.x = element_blank(),
+  axis.text.x = element_blank(),
+  axis.ticks.x = element_blank()
+  ) + stat_summary(
+  fun.y = mean,
+  geom = "point",
+  shape = 20,
+  size = 5,
+  color = "green",
+  fill = "green"
+  ) + stat_summary(
+  fun.y = median,
+  fun.ymin = median,
+  fun.ymax = median,
+  geom = "Crossbar",
+  width = 0.9
+  ) + ggtitle("Range of Points Available - After The Storm", subtitle = "Measures of Five 21st Century Skills") + labs(x = "Skills", y = "Points Available to Earned") + theme(plot.title = element_text(
+  family = "Arial",
+  color = "#a4c94f",
+  face = "bold",
+  size = 14,
+  hjust = 0
+  ))
+```
+
+```{r,echo = FALSE, cache=FALSE, warning=FALSE}
+P1 <- dplyr::select(ATSPer_Skills2, contains("possible_"))
+P1 <- 
+  dplyr::rename(P1, Points_Available_Social = possible_good_social)
+P1 <-
+  dplyr::rename(P1, Points_Available_Productivity = possible_good_Productivity)
+P1 <-
+  dplyr::rename(P1, Points_Available_Leadership = possible_good_Leadership)
+P1 <-
+  dplyr::rename(P1, Points_Available_Flexibility = possible_good_Flexibility)
+P1 <-
+  dplyr::rename(P1, Points_Available_Initiative = possible_good_Initiative)
+```
+
+### Table of Points Availabe to Earn - After the Storm 
+**These are the count of students who have encountered an opportunity to demonstrate a particular 21st century skill.**
+```{r,echo = FALSE, cache=FALSE, warning=FALSE}
+colSums(P1 != 0)
+```
+
+***
+# Part Two: 
+
+***
+
+*We're now going to add the survey data.  Go through the same EDA. Then finally we'll look at the correlation between the skills in VS and the measures in the survey data.*
+
+```{r, echo=FALSE}
+# This data is the majority of schools and students
+Survey1 <-
+read.csv("SY 2017-2018 Student Pre-Program Survey_January 29, 2018_11.38.csv")
+# This data is from one school/ system in Milwaukee
+Survey2 <-
+read.csv("SY 2017-2018 MPS Student Pre-Program Survey_January 29, 2018_11.34.csv")
+```
+
+```{r, echo=FALSE}
+Survey1a <- dplyr::select(Survey1, Q21_1:Q21_10)
+Survey2a <- dplyr::select(Survey2, Q22_1:Q22_10)
+```
+
+### Working through Survey 1
+
+```{r, echo=FALSE, results='hide'}
+match(3,Survey1$Q11)
+match("3,",Survey1$Q11)
+```
+
+```{r, echo=FALSE}
+# Cutting out the variables are not useful for our purpose regarding correlation
+Survey1a <- dplyr::select(Survey1, ResponseId:Q21_10)
+Survey2a <- dplyr::select(Survey2, ResponseId:Q22_10)
+```
+
+```{r, echo=FALSE}
+Survey1a <- dplyr::select(Survey1a, ResponseId, Q8 , Q21_1:Q21_10)
+Survey2a <- dplyr::select(Survey2a, ResponseId, Q11, Q22_1:Q22_10)
+```
+
+```{r, echo=FALSE}
+Survey1a <- data.frame(lapply(Survey1a, function(x) {
+  gsub("Please respond to the following statements. - ", "", x)
+}))
+
+Survey2a <- data.frame(lapply(Survey2a, function(x) {
+gsub("Please respond to the following statements. - ", "", x)
+}))
+```
+
+```{r, echo=FALSE}
+colnames(Survey1a) <- as.character(unlist(Survey1a[1, ]))
+Survey1a = Survey1a[-1,]
+
+colnames(Survey2a) <- as.character(unlist(Survey2a[1, ]))
+Survey2a = Survey2a[-1,] 
+```
+
+```{r, echo=FALSE}
+Survey1a = Survey1a[-1,]
+Survey2a = Survey2a[-1,] 
+```
+
+```{r,echo=FALSE}
+#Merging the two data frames
+SurveyM <- rbind(Survey1a, Survey2a)
+```
+
+```{r, echo=FALSE, results = 'hide'}
+# no NA values
+
+sapply(SurveyM, function(x)
+sum(is.na(x)))
+```
+
+```{r, echo=FALSE, results = 'hide'}
+# Renaming the Variables for ease of use.
+
+SurveyM2 <- dplyr::rename(
+SurveyM,
+"Users" = "Your Game Username",
+"Q1" = "I can set an example for others.",
+"Q2" = "I can contribute to group efforts.",
+"Q3" = "I can take an active role in learning.",
+"Q4" = "I compare possible solutions to find the best one.",
+"Q5" = "I can do things on my own.",
+"Q6" = "I usually have more than one source of information before making a decision.",
+"Q7" = "I take steps to accomplish goals.",
+"Q8" = "I can be in charge of a group of classmates.",
+"Q9" = "I compare different ideas when thinking about a topic.",
+"Q10" = "When faced with a decision, I realize that some choices are better than others.",
+"Q11" = "I use what I know already to solve new problems.",
+"Q12" = "I think about all the information I have about making new decisions."
+)
+```
+
+```{r, echo=FALSE, results = 'hide'}
+A1 <-
+  select(SurveyM2, Q1, Q2, Q3, Q4, Q5, Q6, Q7, Q8, Q9, Q10, Q11, Q12)
+```
+
+```{r, echo=FALSE}
+# Converting the results of the external survey into integars from factors so that I can use them in the correlation matrix.
+A2 <-
+  data.frame(lapply(A1, function(x)
+    as.numeric(as.character(x))))
+```
+
+```{r, echo=FALSE, results= 'hide'}
+
+# I converted the NAs to 0s in the line below to keep the rows.  Is this the right approach?
+row_sub = apply(A2, 1, function(row)
+  all(row != 0))
+  ##Subset as usual
+  sapply(A2, function(x)
+  sum(is.na(x)))
+```
+
+```{r, echo=FALSE, results= 'hide'}
+library(MissMech)
+```
+
+```{r, echo=FALSE, results= 'hide'}
+# The survey data rejects the Null hypothesis.  Strongly suggesting that the missing data is random and this is a good thing.
+
+TestMCARNormality(data=A2)
+```
+```{r}
+A3 <- na.omit(A2)
+diff <- 2121- 1716
+Quo <- 405/2121
+```
+
+
+```{r, echo=FALSE, results= 'hide'}
+A2[is.na(A2)] <- 0
+```
+
+```{r, echo=FALSE}
+CorPlot1 <- cor(A2)
+```
+
+**How the Survey questions correlate**
+```{r,echo=FALSE, results= 'hide'}
+
+corrplot(
+  CorPlot1,
+  na.action = na.omit,
+  type = "lower",
+  order = "hclust",
+  tl.col = "black",
+  method = "number"
+  ) #plot matrix
+
+ 
+  corrplot(
+  CorPlot1,
+  type = "lower",
+  order = "hclust",
+  tl.col = "black",
+  method = "circle"
+  ) #plot matrix
+```
+
+```{r, echo=FALSE}
+#I've been running into an issue converting the rows form factors into integers.  This is important for properly running any correlation.  I suspect that the high numbe of "blank" rows plays a role here.  I'll try to convert those into a character/or then remove them.
+
+#We'll have to keep track of how many rows we'll lose before we can jsut remove data.
+# Converting the results of the external survey into integars from factors so that I can use them in the correlation matrix.
+Survey1b <-
+data.frame(lapply(Survey1a, function(x)
+as.numeric(as.character(x))))
+```
+
+```{r, echo=FALSE, results= 'hide'}
+# All the blanks were converted into 0s so i haven't lost any rows of data.
+which(Survey1b$Q21_1 == 67)
+which(Survey1b$Q21_1 == 88)
+```
+
+```{r, echo=FALSE, results= 'hide'}
+row_sub = apply(Survey1b, 1, function(row)
+  all(row != 0))
+  ##Subset as usual
+  sapply(Survey1b, function(x)
+  sum(is.na(x)))
+```
+
+```{r,echo=FALSE, results= 'hide'}
+# removing the na's
+Survey1b <- na.omit(Survey1b)
+```
+
+
+
+
+**Survey 2**
+
+```{r, echo=FALSE, results= 'hide'}
+sapply(Survey2a, function(x)
+  sum(is.na(x)))
+```
+
+```{r, echo=FALSE,results= 'hide'}
+Survey2a = Survey2a[-1,]
+Survey2a = Survey2a[-1,]         
+```
+
+```{r, echo=FALSE}
+# Converting the results of the external survey into integars from factors so that I can use them in the correlation matrix.
+Survey2b <-
+  data.frame(lapply(Survey2a, function(x)
+    as.numeric(as.character(x))))
+```
+
+```{r,echo=FALSE, results= 'hide'}
+# All the blanks were converted into 0s so i haven't lost any rows of data.
+which(Survey2b$Q21_1 == 67)
+which(Survey2b$Q21_1 == 88)
+```
+
+```{r, echo=FALSE, results= 'hide'}
+row_sub = apply(Survey2b, 1, function(row)
+  all(row != 0))
+  ##Subset as usual
+  sapply(Survey2b, function(x)
+  sum(is.na(x)))
+```
+
+```{r, echo=FALSE}
+# removing the na's
+Survey2b <- na.omit(Survey2b)
+```
+
+```{r, echo=FALSE}
+# Note in this convertion processs we lost a little under 400 rows of data.  This is due to the Na's
+B1 <- cor(Survey2b)
+```
+
+```{r, echo=FALSE, results= 'hide'}
+# Corplot of the Milwaukee Survey Questions
+corrplot(
+  B1,
+  type = "lower",
+  order = "hclust",
+  tl.col = "black",
+  method = "number"
+  ) #plot matrix
+```
+
+```{r, echo=FALSE, results= 'hide'}
+# Corplot of the Milwaukee Survey Questions
+  corrplot(
+  B1,
+  type = "lower",
+  order = "hclust",
+  tl.col = "black",
+  method = "circle"
+  ) #plot matrix
+```
+
+***
+# Part Three: Creating the 2 cumulative measures from the External Instruments & Time to merge External and internal metrics
+
+***
+```{r, echo=FALSE}
+# This data is the majority of schools and students
+Survey1 <-
+read.csv("SY 2017-2018 Student Pre-Program Survey_January 29, 2018_11.38.csv")
+# This data is from one school/ system in Milwaukee
+Survey2 <-
+read.csv("SY 2017-2018 MPS Student Pre-Program Survey_January 29, 2018_11.34.csv")
+```
+
+```{r, echo=FALSE, results='hide'}
+match(3,Survey1$Q11)
+match("3,",Survey1$Q11)
+```
+
+```{r, echo=FALSE}
+# Cutting out the variables are not useful for our purpose regarding correlation
+Survey1a <- dplyr::select(Survey1, ResponseId:Q21_10)
+Survey2a <- dplyr::select(Survey2, ResponseId:Q22_10)
+```
+
+```{r, echo=FALSE}
+Survey1a <- dplyr::select(Survey1a, ResponseId, Q8 , Q21_1:Q21_10)
+Survey2a <- dplyr::select(Survey2a, ResponseId, Q11, Q22_1:Q22_10)
+```
+
+```{r, echo=FALSE}
+Survey1a <- data.frame(lapply(Survey1a, function(x) {
+  gsub("Please respond to the following statements. - ", "", x)
+}))
+
+Survey2a <- data.frame(lapply(Survey2a, function(x) {
+gsub("Please respond to the following statements. - ", "", x)
+}))
+```
+
+```{r, echo=FALSE}
+colnames(Survey1a) <- as.character(unlist(Survey1a[1, ]))
+Survey1a = Survey1a[-1,]
+
+colnames(Survey2a) <- as.character(unlist(Survey2a[1, ]))
+Survey2a = Survey2a[-1,] 
+```
+
+```{r, echo=FALSE}
+Survey1a = Survey1a[-1,]
+Survey2a = Survey2a[-1,] 
+```
+
+```{r,echo=FALSE}
+#Merging the two data frames
+SurveyM <- rbind(Survey1a, Survey2a)
+```
+
+```{r}
+# Renaming the Variables for ease of use.
+
+SurveyM2 <- dplyr::rename(
+SurveyM,
+"Users" = "Your Game Username",
+"Q1" = "I can set an example for others.",
+"Q2" = "I can contribute to group efforts.",
+"Q3" = "I can take an active role in learning.",
+"Q4" = "I compare possible solutions to find the best one.",
+"Q5" = "I can do things on my own.",
+"Q6" = "I usually have more than one source of information before making a decision.",
+"Q7" = "I take steps to accomplish goals.",
+"Q8" = "I can be in charge of a group of classmates.",
+"Q9" = "I compare different ideas when thinking about a topic.",
+"Q10" = "When faced with a decision, I realize that some choices are better than others.",
+"Q11" = "I use what I know already to solve new problems.",
+"Q12" = "I think about all the information I have about making new decisions."
+)
+```
+
+```{r, echo=FALSE}
+# Converting the survey responses to numeric so we can have a cummulative score
+SurveyM2$Q1 <- as.numeric(as.character(SurveyM2$Q1))
+SurveyM2$Q2 <- as.numeric(as.character(SurveyM2$Q2))
+SurveyM2$Q3 <- as.numeric(as.character(SurveyM2$Q3))
+SurveyM2$Q4 <- as.numeric(as.character(SurveyM2$Q4))
+SurveyM2$Q5 <- as.numeric(as.character(SurveyM2$Q5))
+SurveyM2$Q6 <- as.numeric(as.character(SurveyM2$Q6))
+SurveyM2$Q7 <- as.numeric(as.character(SurveyM2$Q7))
+SurveyM2$Q8 <- as.numeric(as.character(SurveyM2$Q8))
+SurveyM2$Q9 <- as.numeric(as.character(SurveyM2$Q9))
+SurveyM2$Q10 <- as.numeric(as.character(SurveyM2$Q10))
+SurveyM2$Q11 <- as.numeric(as.character(SurveyM2$Q11))
+SurveyM2$Q12 <- as.numeric(as.character(SurveyM2$Q12))
+```
+
+```{r, echo=FALSE}
+# We're creating two variables. They effectively take into account the external measures.
+SurveyM2$LCSDI <-
+  (SurveyM2$Q1 + SurveyM2$Q2 + SurveyM2$Q3 + SurveyM2$Q5 + SurveyM2$Q7 + SurveyM2$Q8/6)
+
+SurveyM2$CTDMPS <-
+  (SurveyM2$Q4 + SurveyM2$Q6 + SurveyM2$Q9 + SurveyM2$Q10 + SurveyM2$Q11 + SurveyM2$Q12/6)
+```
+
+```{r,echo=FALSE}
+# I need to merge the questions that match particular skill. They need to be averages since this is on a Likert scale.  
+
+SurveyM2$L_C <-
+  (SurveyM2$Q1 + SurveyM2$Q2 + SurveyM2$Q8/3) # L/C = Leadership / Collaboration
+SurveyM2$SD_I <-
+  (SurveyM2$Q3 + SurveyM2$Q7 + SurveyM2$Q5/3) # SD/I = Self Direction/ Initiative
+SurveyM2$CT <- (SurveyM2$Q6 + SurveyM2$Q9/2) # CT = Critical Thinking
+SurveyM2$DM <- (SurveyM2$Q12 + SurveyM2$Q10/2) # DM = Decision Making
+SurveyM2$PS <- (SurveyM2$Q11 + SurveyM2$Q4/2) # PS = Problem Solving
+```
+
+```{r, echo=FALSE}
+# Removing the questions
+SurveyM2 <-
+  dplyr::select(SurveyM2,
+  -Q1,
+  -Q2,
+  -Q3,
+  -Q4,
+  -Q5,
+  -Q6,
+  -Q7,
+  -Q8,
+  -Q9,
+  -Q10,
+  -Q11,
+  -Q12)
+```
+
+```{r, echo=FALSE}
+# clearning up the username issues/ inconsistencies 
+A1 <-
+  read.csv("SkillDev.CIC.csv") #After The Storm Data from 08.15.2017 - Present
+B1 <-
+  read.csv("SY17-18.All.TestComplete.csv") #Data that has accurate User Names
+```
+
+```{r, echo=FALSE}
+# Merging the other A1 data with the CATSP_Skills data
+A1 <- dplyr::select(A1, Student.ID, User_Name)
+A1 <- dplyr::rename(A1, Users = User_Name)
+A2 <- merge(A1, ATS_Skills, by = "Users")
+```
+
+```{r, echo=FALSE}
+# Eliminating the variables that I don't need
+B1 <- dplyr::select(B1, Student, STAR.RTL.ID, Student.Survey.Match)
+```
+
+```{r, echo=FALSE}
+#Need to merge the survey response data from SurveyM2 with the accurate User Name & ID data from B1
+B2 <- dplyr::rename(B1, Response_ID = Student.Survey.Match)
+SurveyM3 <- dplyr::rename(SurveyM2, Response_ID = "Response ID")
+B3 <- merge(B2, SurveyM3, by = "Response_ID")
+```
+
+### Summary Statistics of External Measures - 2017 - 18 [table 3]
+```{r, echo = FALSE,cache=FALSE,warning=FALSE, results = 'asis'}
+# merge of the the Survey Data w/ the two measures and their accurate Usernames
+B3_Summary <- dplyr:: select(B3, - Users, - STAR.RTL.ID, -Student, -Response_ID)
+
+# Defining the function
+my.summary <- function(x, na.rm=TRUE){
+  result <- c(Mean=mean(x, na.rm=na.rm),
+              SD=sd(x, na.rm=na.rm),
+              Median=median(x, na.rm=na.rm),
+              Min=min(x, na.rm=na.rm),
+              Max=max(x, na.rm=na.rm), 
+              N=length(x))
+}
+
+# identifying numeric columns
+ind <- sapply(B3_Summary, is.numeric)
+
+
+# applying the function to numeric columns only
+sapply(B3_Summary[, ind], my.summary) 
+```
+
+```{r,echo=FALSE}
+B4 <- dplyr::select(B3, - Users)
+B4 <- dplyr::rename(B4, Users = STAR.RTL.ID)
+MasterFrame1 <- merge(ATSPer_Skills, B4, by="Users" )
+MasterFrame1 <- dplyr::select(MasterFrame1, Users, Total.Good.Decisions, episodes, SocialR, ProdR, LeadR, InitiativeR, FlexR, Response_ID, Student, LCSDI, CTDMPS, L_C, SD_I, CT, DM, PS)
+```
+
+### Summary Statistics of After The Storm & Survey Data 2017 - 2018 [table 4]
+```{r}
+# Defining the function
+my.summary <- function(x, na.rm=TRUE){
+  result <- c(Mean=mean(x, na.rm=na.rm),
+              SD=sd(x, na.rm=na.rm),
+              Median=median(x, na.rm=na.rm),
+              Min=min(x, na.rm=na.rm),
+              Max=max(x, na.rm=na.rm), 
+              N=length(x))
+}
+
+# identifying numeric columns
+ind <- sapply(MasterFrame1, is.numeric)
+
+
+# applying the function to numeric columns only
+sapply(MasterFrame1[, ind], my.summary) 
+```
+
+
