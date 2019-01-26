@@ -1,9 +1,9 @@
 # Automated-Report-Generation---Student-Game-Data
 
-Who is the Audience?
-•	 (Director of Research)
-•	The president & internal leadership
-•	Donors
+### Who is the Audience?
+* (Director of Research)
+* The president & internal leadership
+* Donors
 
 Our original goal was to address these questions in order to support the argument that our games help students develop 21st century skills according to the P21 framework.  Started with these questions
 
@@ -20,21 +20,21 @@ I ran power analysis to confirm that we didn’t have the sample size needed to 
 
 We pivoted.
 
-Our new goal:
-⁃	Educate
-⁃	Helps marking Easier to demonstrate the value when you understand how R&D impacts design/developers
-⁃	Codifying our insights in a way that allows us to repurpose them for multiple audiences
-⁃	Interpretability- When developers are on the same page as as R&D 
-⁃	Create marketing content:
-⁃	Demonstrate the value of the increased investment in the VS game as an instrument vs the other two less sophisticated game
-⁃	Inform donors & employees on our trajectory
-⁃	Generate automated reports 
-⁃	so that data novices can understand  and stake holders can 1-click 
-⁃	Take work off of Hee Jin’s plate so she can focus
-⁃	Give us a baseline so that in the near future we can execute quasi-experimentation & strengthen our argument that we’re developing 21st century skills
+### Our new goal:
+#### * Educate
+    * Helps marking Easier to demonstrate the value when you understand how R&D impacts design/developers
+    * Codifying our insights in a way that allows us to repurpose them for multiple audiences
+    * Interpretability- When developers are on the same page as as R&D 
+#### * Create marketing content:
+    * Demonstrate the value of the increased investment in the VS game as an instrument vs the other two less sophisticated game
+    * Inform donors & employees on our trajectory
+    * Generate automated reports 
+    * So that data novices and stake holders can understand in 1-click 
+    * Take work off of my Director's plate 
+    * Give us a baseline so that in the near future we can execute quasi-experimentation & strengthen our argument that we’re developing 21st century skills
 
-Outcome:
-⁃	One-Pager 
-⁃	Code that connects to theSQL servers and generates reports using histograms and box plots
-⁃	Trouble shooting doc 
+### Outcome:
+* One-Pager 
+* Code that connects to theSQL servers and generates reports using histograms and box plots
+* Trouble shooting doc 
 
